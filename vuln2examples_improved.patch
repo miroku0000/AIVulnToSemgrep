@@ -1,0 +1,144 @@
+# Patch to improve good/bad code generation in vuln2examples.py
+
+# 1. Increase timeout from 180 to 300 seconds
+# Line 484: timeout=180 -> timeout=300
+
+# 2. Add temperature setting for more consistent output
+# Line 476-480: Add temperature and top_p to options
+
+# 3. Replace build_llm_prompt function with improved version
+# Line 501-528: Replace entire function
+
+# 4. Improve JSON parsing with fallback strategies
+# Line 702-711: Replace JSON parsing logic
+
+## New improved functions to add:
+
+def build_improved_llm_prompt(go_id: str, cve: Optional[str], module: str, summary: str, diff_text: str) -> str:
+    """Improved prompt that's more focused and easier for the LLM to process."""
+    
+    # More aggressive diff trimming for faster processing
+    trimmed_diff = diff_text
+    if len(trimmed_diff) > 50_000:  # Reduced from 150k
+        trimmed_diff = trimmed_diff[:50_000] + "\n... [TRUNCATED]"
+    
+    # Extract just the key parts of the diff
+    diff_lines = trimmed_diff.split('\n')
+    key_changes = []
+    
+    for line in diff_lines:
+        if line.startswith('+') and not line.startswith('+++'):
+            key_changes.append(line)
+        elif line.startswith('-') and not line.startswith('---'):
+            key_changes.append(line)
+    
+    # Limit to most important changes
+    if len(key_changes) > 20:
+        key_changes = key_changes[:20] + ["... [MORE CHANGES TRUNCATED]"]
+    
+    key_changes_text = '\n'.join(key_changes)
+    
+    return f"""You are analyzing a security vulnerability fix. Create minimal Go code examples.
+
+VULNERABILITY INFO:
+- ID: {go_id}
+- CVE: {cve or "unknown"}  
+- Module: {module}
+- Issue: {summary[:200]}...
+
+KEY CHANGES FROM DIFF:
+{key_changes_text}
+
+TASK: Create two minimal Go code snippets showing the vulnerability and fix.
+
+REQUIREMENTS:
+1. Make examples short and focused (5-15 lines each)
+2. Show the core security issue clearly
+3. Use simple, standalone functions when possible
+4. Focus on the actual code change pattern
+
+OUTPUT FORMAT - Respond with valid JSON only:
+{{
+  "rationale": "Brief explanation of the security issue and fix",
+  "bad_example": "func vulnerable() {{\\n  // vulnerable code here\\n}}",
+  "good_example": "func secure() {{\\n  // fixed code here\\n}}"
+}}
+
+NO MARKDOWN, NO BACKTICKS, NO EXTRA TEXT - JUST JSON."""
+
+
+def extract_improved_json(llm_resp: str) -> Optional[dict]:
+    """Improved JSON extraction with multiple fallback strategies."""
+    
+    # Strategy 1: Try to parse as JSON directly
+    try:
+        data = json.loads(llm_resp)
+        return data
+    except json.JSONDecodeError:
+        pass
+    
+    # Strategy 2: Extract JSON from response
+    json_match = re.search(r'\{[^{}]*"rationale"[^{}]*\}', llm_resp, re.DOTALL)
+    if json_match:
+        try:
+            data = json.loads(json_match.group(0))
+            return data
+        except json.JSONDecodeError:
+            pass
+    
+    # Strategy 3: Extract individual fields with regex
+    rationale_match = re.search(r'"rationale":\s*"([^"]*)"', llm_resp)
+    bad_match = re.search(r'"bad_example":\s*"([^"]*)"', llm_resp)
+    good_match = re.search(r'"good_example":\s*"([^"]*)"', llm_resp)
+    
+    if bad_match and good_match:
+        rationale = rationale_match.group(1) if rationale_match else ""
+        bad_code = bad_match.group(1).replace('\\n', '\n').replace('\\"', '"')
+        good_code = good_match.group(1).replace('\\n', '\n').replace('\\"', '"')
+        
+        return {
+            "rationale": rationale,
+            "bad_example": bad_code,
+            "good_example": good_code
+        }
+    
+    return None
+
+## Changes to make in vuln2examples.py:
+
+# 1. Line 484: Change timeout
+r = requests.post(f"{url.rstrip('/')}/api/generate", json=payload, timeout=300)
+
+# 2. Line 476-480: Add temperature settings
+payload = {
+    "model": model,
+    "prompt": prompt,
+    "stream": False,
+    "options": {
+        "num_ctx": 8192,
+        "temperature": 0.3,
+        "top_p": 0.9,
+    },
+}
+
+# 3. Line 501: Replace function name
+prompt = build_improved_llm_prompt(go_id, cve, module, summary_text, diff_text)
+
+# 4. Line 702-711: Replace JSON parsing
+try:
+    data = json.loads(llm_resp)
+except Exception:
+    data = extract_improved_json(llm_resp)
+    if not data:
+        m = re.search(r"\{(?:.|\n)*\}\s*$", llm_resp)
+        if not m:
+            log("    - ERROR: LLM did not return parsable JSON; skipping examples")
+            continue
+        try:
+            data = json.loads(m.group(0))
+        except:
+            log("    - ERROR: All JSON parsing strategies failed; skipping examples")
+            continue
+
+# 5. Alternative: Add fallback to smaller model on timeout
+# In the LLM call section, add retry logic with llama3.2:3b if qwen2.5-coder:14b times out

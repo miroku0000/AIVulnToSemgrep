@@ -1,0 +1,41 @@
+# Semgrep Rule Generation Configuration
+# Configuration for vuln2semgrep.py
+
+# Model settings
+model: "qwen2.5-coder:14b"
+ollama_url: "http://127.0.0.1:11434"
+seed: 42
+
+# Processing settings
+only_with_examples: true
+create_master: true
+debug: true
+
+# Rule generation prompts can be customized here
+custom_prompts:
+  authentication_vulnerabilities: |
+    Focus on authentication bypass patterns, inconsistent user identification,
+    and missing security context in authentication flows.
+  
+  injection_vulnerabilities: |
+    Focus on input validation, sanitization, and injection attack vectors.
+  
+  authorization_vulnerabilities: |
+    Focus on privilege escalation, missing authorization checks, and
+    inconsistent permission enforcement.
+
+# Rule quality settings
+rule_requirements:
+  - "Use descriptive rule IDs with vulnerability context"
+  - "Include severity levels: ERROR for security issues, WARNING for potential issues"
+  - "Add clear messages explaining what the rule detects"
+  - "Include fix suggestions where possible"
+  - "Consider false positive reduction"
+  - "Test patterns against both vulnerable and safe code"
+
+# Output organization
+output_structure:
+  individual_rules: true    # Create individual .yml files per vulnerability
+  master_ruleset: true     # Create combined ruleset
+  metadata_files: true     # Create metadata for each rule
+  debug_files: true        # Save raw LLM responses for debugging

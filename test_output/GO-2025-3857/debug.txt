@@ -1,0 +1,16 @@
+[GO-2025-3857] Start processing
+  - JSON link: https://vuln.go.dev/ID/GO-2025-3857.json (html=yes)
+  - Extra refs from Nutanix HTML: 2
+  - Extra refs from pkg.go.dev: 2
+  - Inferred modules from text: ['github.com/openbao/openbao', 'github.com/openbao/openbao.']
+  - Inferred modules from refs: ['github.com/openbao/openbao']
+  - Modules: ['github.com/openbao/openbao', 'github.com/openbao/openbao.']
+  - Repo map: {'github.com/openbao/openbao': 'openbao/openbao', 'github.com/openbao/openbao.': 'openbao/openbao.'}
+  - Fixed versions: {'github.com/openbao/openbao': [], 'github.com/openbao/openbao.': []}
+  - References: ['https://github.com/openbao/openbao/commit/9b0b5d4f345fdfb1065956f042b12cbd86cd6e0f', 'https://github.com/openbao/openbao/pull/1627']
+  - CVE: CVE-2025-54996
+  - Summary: OpenBao Root Namespace Operator May Elevate Token Privileges in github.com/openbao/openbao
+  * Module: github.com/openbao/openbao
+    - No fixed version specified in JSON
+    - Fetched commit patch via HTTP (len=6116)
+    - Diff descriptor: http-commit:9b0b5d4f345fdfb1065956f042b12cbd86cd6e0f

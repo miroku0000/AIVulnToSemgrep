@@ -1,0 +1,43 @@
+# Output directories
+out/
+npm-out/
+semgrep_rules/
+test_semgrep/
+
+# Cache directories
+_repo_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+progress.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# LLM responses (can be large)
+**/llm_raw.txt
+**/llm_retry.txt
+**/failed_llm_response_*.txt
+
+# Patches and diffs (can be large)
+**/raw_diff.patch
+**/raw_patch.patch

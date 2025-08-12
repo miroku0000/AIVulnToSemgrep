@@ -1,0 +1,6 @@
+# Requirements for vuln2examples.py and vuln2semgrep.py
+requests>=2.25.0
+beautifulsoup4>=4.9.0
+packaging>=20.0
+tenacity>=6.0.0
+PyYAML>=5.4.0
