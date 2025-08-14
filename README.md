@@ -58,10 +58,20 @@ pip install semgrep
 
 ### Complete Pipeline Workflow
 
-#### 1. Generate Vulnerability Examples
+#### 1. Get Vulnerability Data (Choose One Option)
 
+**Option A: Download Pre-processed Data (Recommended - Fast ⚡)**
 ```bash
-# Process Go vulnerabilities with comprehensive settings
+# Download 1,301 pre-processed vulnerabilities from separate repository
+./download_vulnerability_data.sh
+```
+
+**Option B: Generate Data Yourself (8-12 hours on M2 Max)**
+```bash
+# M2 Max optimized - Process Go vulnerabilities with comprehensive settings
+python vuln2examples.py --out ./out --debug --save-llm --workers 1 --http-diff-first --model qwen2.5-coder:14b
+
+# Alternative for other systems  
 python vuln2examples.py --out ./out --debug --save-llm --workers 1 --http-diff-first --model gemma3:4b
 
 # Monitor progress

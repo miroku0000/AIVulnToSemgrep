@@ -1,7 +1,14 @@
-# Output directories
+# Generated vulnerability data (use download_vulnerability_data.sh instead)
 out/
 npm-out/
+
+# Generated semgrep rules  
 semgrep_rules/
+refined_batch_rules/
+final_semgrep_rules/
+enhanced_rules/
+re_refined_rules/
+test_refined_rules/
 test_semgrep/
 
 # Cache directories
@@ -24,6 +31,11 @@ env/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Quality reports and analytics
+refinement_reports/
+re_refinement_reports/
+rule_evaluation/
 
 # Log files
 *.log
